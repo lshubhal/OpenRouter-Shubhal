@@ -1,32 +1,133 @@
-<!-- src/main/resources/static/index.html -->
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>OpenRouter Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-card {
+          max-width: 700px;
+          margin: 30px auto;
+        }
+        .response-box {
+          min-height: 100px;
+          background-color: #f8f9fa;
+          border: 1px solid #ced4da;
+          padding: 15px;
+          border-radius: 6px;
+          max-height: 500px;
+          overflow-y: auto;
+        }
+        .info-card {
+          border: none;
+          background-color: #f1f3f5;
+        }
+        .info-title {
+          font-weight: bold;
+        }
+        .chat-label {
+          font-weight: 600;
+        }
+    </style>
 </head>
 <body>
-<input type="text" id="chatId" placeholder="Chat ID" />
-<input type="text" id="message" placeholder="Your message" />
-<button onclick="sendMessage()">Send</button>
-<button onclick="clearFields()">Clear</button>
-<div id="response"></div>
+
+<div class="container">
+
+    <!-- Chat Interface -->
+    <div class="card chat-card">
+        <div class="card-body">
+            <h5 class="card-title">Chat Interface</h5>
+            <p class="card-subtitle mb-3 text-muted">Send messages to OpenRouter AI</p>
+
+            <form id="chatForm">
+                <div class="mb-3">
+                    <label for="chatId" class="form-label chat-label"># Chat ID</label>
+                    <input type="text" class="form-control" id="chatId" placeholder="Enter chat ID" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label chat-label">💬 Message</label>
+                    <textarea class="form-control" id="message" rows="3" placeholder="Type your message here..." required></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-dark">📤 Send Message</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearFields()">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Response -->
+    <div class="card chat-card">
+        <div class="card-body">
+            <h5 class="card-title">🤖 AI Response <span class="badge bg-light text-dark float-end">Real-time</span></h5>
+            <div id="response" class="response-box mt-3 text-dark" style="white-space: pre-wrap;"></div>
+        </div>
+    </div>
+
+    <!-- Footer Info Cards -->
+    <div class="row chat-card">
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="info-title">🔒 Secure</div>
+                <div>Your conversations are encrypted and secure</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="info-title">⚡ Fast</div>
+                <div>Real-time responses powered by OpenRouter</div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card info-card p-3">
+                <div class="info-title">🧠 Smart</div>
+                <div>Advanced AI models for intelligent conversations</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <script>
-    function sendMessage() {
-        const chatId = document.getElementById('chatId').value;
-        const message = document.getElementById('message').value;
-        fetch('/openrouter/ai/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chatId, message })
-        })
-        .then(res => res.text())
-        .then(data => document.getElementById('response').innerText = data);
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const chatId = document.getElementById('chatId').value;
+      const message = document.getElementById('message').value;
+      const responseEl = document.getElementById('response');
+      responseEl.innerHTML = "⏳ Waiting for response...";
+
+      fetch('/openrouter/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId, message })
+      })
+      .then(res => res.text())
+      .then(data => {
+        responseEl.innerHTML = formatAIResponse(data);
+      })
+      .catch(err => {
+        responseEl.innerText = "❌ Error: " + err.message;
+      });
+    });
+
+    function formatAIResponse(text) {
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/(?:^|\n)[*] (.*?)(?=\n|$)/g, '<li>$1</li>');
+      text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+      text = text.replace(/\n\*\*(\d+\..*?)\*\*/g, '<h5>$1</h5>');
+      const paragraphs = text.split(/\n{2,}/).map(p => `<p>${p.trim()}</p>`).join('');
+      return paragraphs;
     }
+
     function clearFields() {
-        document.getElementById('chatId').value = '';
-        document.getElementById('message').value = '';
-        document.getElementById('response').innerText = '';
+      document.getElementById('chatId').value = '';
+      document.getElementById('message').value = '';
+      document.getElementById('response').innerHTML = '<span>💬 AI response will appear here...</span>';
     }
 </script>
+
 </body>
 </html>
