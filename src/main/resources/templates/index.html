@@ -1,0 +1,32 @@
+<!-- src/main/resources/static/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenRouter Chat</title>
+</head>
+<body>
+<input type="text" id="chatId" placeholder="Chat ID" />
+<input type="text" id="message" placeholder="Your message" />
+<button onclick="sendMessage()">Send</button>
+<button onclick="clearFields()">Clear</button>
+<div id="response"></div>
+<script>
+    function sendMessage() {
+        const chatId = document.getElementById('chatId').value;
+        const message = document.getElementById('message').value;
+        fetch('/openrouter/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chatId, message })
+        })
+        .then(res => res.text())
+        .then(data => document.getElementById('response').innerText = data);
+    }
+    function clearFields() {
+        document.getElementById('chatId').value = '';
+        document.getElementById('message').value = '';
+        document.getElementById('response').innerText = '';
+    }
+</script>
+</body>
+</html>
