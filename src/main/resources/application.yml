@@ -1,5 +1,8 @@
 spring:
   ai:
     openai:
-      api-key: #your-api-Key
+      api-key: key
       base-url: https://openrouter.ai/api
+      #chat:
+      #  options:
+      #    model: openai/gpt-oss-120b
