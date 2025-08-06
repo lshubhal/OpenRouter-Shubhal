@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class ChatRequest {
-    private String model;
-    private String message;
+public class ModelInfo {
+
+    private String id;
+
 }

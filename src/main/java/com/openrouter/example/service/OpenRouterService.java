@@ -2,6 +2,8 @@ package com.openrouter.example.service;
 
 import com.openrouter.example.dto.ChatCompletionResponse;
 import com.openrouter.example.dto.Message;
+import com.openrouter.example.dto.ModelInfo;
+import com.openrouter.example.dto.ModelsResponse;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -48,5 +50,22 @@ public class OpenRouterService {
         Message message = response.getChoices().get(0).getMessage();
         String content = message.getContent();
         return content;
+    }
+
+    public List<String> getAllModels() {
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://openrouter.ai/api/v1")
+                .defaultHeader("Authorization", "Bearer " + apiKey)
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+                .build();
+
+        ModelsResponse response = webClient.get()
+                .uri("/models")
+                .retrieve()
+                .bodyToMono(ModelsResponse.class)
+                .block();
+        return  response.getData().stream()
+                .map(ModelInfo::getId)
+                .toList();
     }
 }
